@@ -41,9 +41,7 @@ app.get("/productos/:id", (req, res) => {
   res.json(producto);
 });
 
-// ============================================================
-// PRÁCTICA 6: Completa los siguientes métodos de la API
-// ============================================================
+// Practica 6
 
 // Función auxiliar: revisa que vengan nombre, descripcion y precio
 function faltanCampos(datos) {
@@ -58,7 +56,7 @@ function faltanCampos(datos) {
   );
 }
 
-// Función auxiliar (reto opcional): el precio debe ser un número mayor que cero
+// Función auxiliar: el precio debe ser un número mayor que cero
 function precioValido(precio) {
   const precioNumerico = parseFloat(precio);
   return !isNaN(precioNumerico) && precioNumerico > 0;
@@ -82,7 +80,7 @@ app.post("/productos", (req, res) => {
     });
   }
 
-  // Generar un id único: el id más alto existente + 1 (o 1 si no hay productos)
+  // Generar un id único
   const nuevoId =
     productos.length > 0 ? Math.max(...productos.map((p) => p.id)) + 1 : 1;
 
@@ -104,7 +102,7 @@ app.put("/productos/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const indice = productos.findIndex((p) => p.id === id);
 
-  // Si el producto no existe, responder 404
+  // Si el producto no existe, responde 404
   if (indice === -1) {
     return res.status(404).json({ mensaje: "Producto no encontrado" });
   }
@@ -144,7 +142,7 @@ app.delete("/productos/:id", (req, res) => {
   const id = parseInt(req.params.id);
   const indice = productos.findIndex((p) => p.id === id);
 
-  // Si el producto no existe, responder 404
+  // Si el producto no existe, responde 404
   if (indice === -1) {
     return res.status(404).json({ mensaje: "Producto no encontrado" });
   }
