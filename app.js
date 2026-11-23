@@ -1,0 +1,163 @@
+const express = require("express");
+const app = express();
+
+app.use(express.json());
+
+const productos = [
+  {
+    id: 1,
+    nombre: "Teclado inalambrico",
+    descripcion: "Teclado 101 teclas idioma ingles",
+    precio: 1500.0,
+  },
+  {
+    id: 2,
+    nombre: "Mouse inalambrico",
+    descripcion: "Mouse optico inalambrico.",
+    precio: 600.0,
+  },
+  {
+    id: 3,
+    nombre: "Monitor 23.5 pulgadas full hd",
+    descripcion: "Monitor Full HD panel IPS",
+    precio: 6500.0,
+  },
+];
+
+// GET - Listar todos los productos
+app.get("/productos", (req, res) => {
+  res.json(productos);
+});
+
+// GET - Obtener un producto por id
+app.get("/productos/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const producto = productos.find((p) => p.id === id);
+
+  if (!producto) {
+    return res.status(404).json({ mensaje: "Producto no encontrado" });
+  }
+
+  res.json(producto);
+});
+
+// ============================================================
+// PRÁCTICA 6: Completa los siguientes métodos de la API
+// ============================================================
+
+// Función auxiliar: revisa que vengan nombre, descripcion y precio
+function faltanCampos(datos) {
+  const { nombre, descripcion, precio } = datos;
+  return (
+    nombre === undefined ||
+    nombre === "" ||
+    descripcion === undefined ||
+    descripcion === "" ||
+    precio === undefined ||
+    precio === ""
+  );
+}
+
+// Función auxiliar (reto opcional): el precio debe ser un número mayor que cero
+function precioValido(precio) {
+  const precioNumerico = parseFloat(precio);
+  return !isNaN(precioNumerico) && precioNumerico > 0;
+}
+
+// POST /productos - Crear nuevo producto
+app.post("/productos", (req, res) => {
+  const datos = req.body || {};
+
+  // Validar que vengan los tres campos obligatorios
+  if (faltanCampos(datos)) {
+    return res.status(400).json({
+      mensaje: "Los campos nombre, descripcion y precio son obligatorios",
+    });
+  }
+
+  // Validar que el precio sea un número mayor que cero
+  if (!precioValido(datos.precio)) {
+    return res.status(400).json({
+      mensaje: "El precio debe ser un numero mayor que cero",
+    });
+  }
+
+  // Generar un id único: el id más alto existente + 1 (o 1 si no hay productos)
+  const nuevoId =
+    productos.length > 0 ? Math.max(...productos.map((p) => p.id)) + 1 : 1;
+
+  const nuevoProducto = {
+    id: nuevoId,
+    nombre: datos.nombre,
+    descripcion: datos.descripcion,
+    precio: parseFloat(datos.precio),
+  };
+
+  productos.push(nuevoProducto);
+
+  // 201 Created con el producto creado
+  res.status(201).json(nuevoProducto);
+});
+
+// PUT /productos/:id - Actualizar producto
+app.put("/productos/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const indice = productos.findIndex((p) => p.id === id);
+
+  // Si el producto no existe, responder 404
+  if (indice === -1) {
+    return res.status(404).json({ mensaje: "Producto no encontrado" });
+  }
+
+  const datos = req.body || {};
+
+  // Validar que vengan los tres campos obligatorios
+  if (faltanCampos(datos)) {
+    return res.status(400).json({
+      mensaje: "Los campos nombre, descripcion y precio son obligatorios",
+    });
+  }
+
+  // Validar que el precio sea un número mayor que cero
+  if (!precioValido(datos.precio)) {
+    return res.status(400).json({
+      mensaje: "El precio debe ser un numero mayor que cero",
+    });
+  }
+
+  // Reemplazar los datos conservando el mismo id
+  const productoActualizado = {
+    id: id,
+    nombre: datos.nombre,
+    descripcion: datos.descripcion,
+    precio: parseFloat(datos.precio),
+  };
+
+  productos[indice] = productoActualizado;
+
+  // 200 OK con el producto actualizado
+  res.status(200).json(productoActualizado);
+});
+
+// DELETE /productos/:id - Eliminar producto
+app.delete("/productos/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const indice = productos.findIndex((p) => p.id === id);
+
+  // Si el producto no existe, responder 404
+  if (indice === -1) {
+    return res.status(404).json({ mensaje: "Producto no encontrado" });
+  }
+
+  // splice devuelve un arreglo con los elementos eliminados
+  const [productoEliminado] = productos.splice(indice, 1);
+
+  res.status(200).json({
+    mensaje: "Producto eliminado",
+    producto: productoEliminado,
+  });
+});
+
+app.listen(3000, () => {
+  console.log("Servidor corriendo en http://localhost:3000");
+});
